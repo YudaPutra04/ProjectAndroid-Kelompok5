@@ -3,45 +3,60 @@ package com.example.kelompok5
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import com.example.kelompok5.ui.theme.Kelompok5Theme
+import androidx.compose.ui.graphics.Color
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+
+// Warna yang dipakai bersama di semua halaman
+object WarnaApp {
+    val BiruTua = Color(0xFF1E3A8A)
+    val BiruUtama = Color(0xFF2563EB)
+    val BiruKartu = Color(0xFF1E64C8)
+    val BiruMuda = Color(0xFFDBEAFE)
+    val BiruLabel = Color(0xFF93C5FD)
+}
+
+// Nama rute navigasi (dipusatkan supaya tidak salah ketik)
+object Rute {
+    const val LOBBY = "lobby"
+    const val MENU = "menu"
+    const val DETAIL = "detail"
+    const val ARG_NAMA = "namaAnggota"
+}
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
         setContent {
-            Kelompok5Theme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "KELOMPOK 5 READY",
-                        modifier = Modifier.padding(innerPadding)
+            val navController = rememberNavController()
+
+            NavHost(navController = navController, startDestination = Rute.LOBBY) {
+
+                // Lobby -> Menu
+                composable(route = Rute.LOBBY) {
+                    HalamanLobbyInovasi(
+                        onAksiPindah = { navController.navigate(route = Rute.MENU) }
+                    )
+                }
+
+                // Menu -> Detail (kirim nama anggota yang diklik)
+                composable(route = Rute.MENU) {
+                    HalamanMenu(
+                        onKembali = { navController.popBackStack() },
+                        onAnggotaKlik = { nama -> navController.navigate(route = "${Rute.DETAIL}/$nama") }
+                    )
+                }
+
+                // Detail (ambil nama anggota dari argumen rute)
+                composable(route = "${Rute.DETAIL}/{${Rute.ARG_NAMA}}") { backStackEntry ->
+                    val nama = backStackEntry.arguments?.getString(Rute.ARG_NAMA).orEmpty()
+                    HalamanDetail(
+                        nama = nama,
+                        onKembali = { navController.popBackStack() }
                     )
                 }
             }
-        }
-    }
-
-    @Composable
-    fun Greeting(name: String, modifier: Modifier = Modifier) {
-        Text(
-            text = "HALO PA YAHYA, $name!",
-            modifier = modifier
-        )
-    }
-
-    @Preview(showBackground = true)
-    @Composable
-    fun GreetingPreview() {
-        Kelompok5Theme {
-            Greeting("Android")
         }
     }
 }
